@@ -1,17 +1,17 @@
-const { Product } = require("../models/index")
+const { Product } = require("../models")
 
 const createProduct = async (req, res) => {
     const { name, price, stock } = req.body
     try {
-        const newProduct = await Product.create({
-            name: name,
-            price: price,
-            stock: stock
+        const product = await Product.create({
+            name,
+            price,
+            stock
         })
         res.status(200).json({
-            status: "Success, P created",
+            status: "Success, product created",
             data: {
-                newProduct
+                product
             }
         })
     } catch (error) {
@@ -24,7 +24,7 @@ const createProduct = async (req, res) => {
 
 const getProducts = async (req, res) => {
     try {
-        const product = await Product.findAll({})
+        const product = await Product.findAll()
         res.status(200).json({
             status: "Success, product fetched",
             data: {
@@ -43,6 +43,11 @@ const getProduct = async (req, res) => {
     const id = req.params.id
     try {
         const product = await Product.findOne({ where: { id } })
+        if (!product) {
+            return res.status(404).json({
+                status: `Not found!, id with ${id} are not exist`
+            })
+        }
         res.status(200).json({
             status: `Success, product fetched where id ${id}`,
             data: {
@@ -59,14 +64,24 @@ const getProduct = async (req, res) => {
 
 const updateProduct = async (req, res) => {
     const { name, price, stock } = req.body
+    const id = req.params.id
     try {
-        const product = await Product.update({
-            name: name,
-            price: price,
-            stock: stock
-        })
+        const findProduct = await Product.findOne({ where: { id } })
+        if (!findProduct) {
+            return res.status(404).json({
+                status: `Not found!, id with ${id} are not exist`
+            })
+        }
+        const product = await Product.update(
+            {
+                name: name,
+                price: price,
+                stock: stock
+            },
+            { where: { id } }
+        )
         res.status(200).json({
-            status: `Success, product fetched where id ${id}`,
+            status: `Success, product updated where id ${id}`,
             data: {
                 product
             }
@@ -80,12 +95,19 @@ const updateProduct = async (req, res) => {
 }
 
 const deleteProduct = async (req, res) => {
+    const id = req.params.id
     try {
+        const findProduct = await Product.findOne({ where: { id } })
+        if (!findProduct) {
+            return res.status(404).json({
+                status: `Not found!, id with ${id} are not exist`
+            })
+        }
         const product = await Product.destroy({
             where: { id: req.params.id }
         })
         res.status(200).json({
-            status: `Success, product fetched where id ${id}`,
+            status: `Success, product deleted where id ${id}`,
             data: {
                 product
             }
