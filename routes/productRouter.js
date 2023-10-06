@@ -7,7 +7,9 @@ const {
     deleteProduct
 } = require("../controllers/productController")
 
-router.route("/").post(createProduct).get(getProducts)
+const uploader = require("../middlewares/uploader")
+
+router.route("/").post(uploader.single("image"), createProduct).get(getProducts)
 router.route("/:id").get(getProduct).put(updateProduct).delete(deleteProduct)
 
 module.exports = router

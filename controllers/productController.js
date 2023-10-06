@@ -1,12 +1,24 @@
+const imagekit = require("../lib/imageKit")
 const { Product } = require("../models")
 
 const createProduct = async (req, res) => {
     const { name, price, stock } = req.body
+    const file = req.file
+    // dapatkan extension filenya
+    const split = file.originalname.split(".")
+    const extension = split(split.length - 1)
+
+    // upload file ke image kit
+    const img = await imagekit.upload({
+        file: file.buffer,
+        fileName: `IMG-${Date.now()}.${extension}`
+    })
     try {
         const product = await Product.create({
             name,
             price,
-            stock
+            stock,
+            ImageUrl: img.url
         })
         res.status(200).json({
             status: "Success, product created",
