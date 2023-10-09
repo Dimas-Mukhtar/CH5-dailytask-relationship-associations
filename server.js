@@ -1,6 +1,8 @@
 const express = require("express")
 const morgan = require("morgan")
 const PORT = process.env.PORT || 4000
+const errorHandler = require("./controllers/errorController")
+const AppError = require("./utils/apiError")
 
 const app = express()
 app.use(express.json())
@@ -13,6 +15,16 @@ app.use(morgan("dev"))
 app.use("/api/v1/products", require("./routes/productRouter"))
 app.use("/dashboard", require("./routes/adminRouter"))
 
+app.all("*", (req, res, next) => {
+    // const err = new Error("Routes does not exist")
+    // err.status = "Failed"
+    // err.statusCode = 404
+    return next(new AppError("Routes does not exist", 404))
+
+    // next(err)
+})
+
+app.use(errorHandler)
 app.listen(PORT, () => {
     console.log(`Server listening on localhost://localhost:${PORT}`)
 })
