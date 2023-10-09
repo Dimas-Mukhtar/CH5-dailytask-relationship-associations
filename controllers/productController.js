@@ -74,9 +74,7 @@ const updateProduct = async (req, res, next) => {
     try {
         const findProduct = await Product.findOne({ where: { id } })
         if (!findProduct) {
-            return res.status(404).json({
-                status: `Not found!, id with ${id} are not exist`
-            })
+            return next(new AppError(`Not found!, id with ${id} are not exist`, 404))
         }
         const product = await Product.update(
             {
@@ -102,9 +100,7 @@ const deleteProduct = async (req, res, next) => {
     try {
         const findProduct = await Product.findOne({ where: { id } })
         if (!findProduct) {
-            return res.status(404).json({
-                status: `Not found!, id with ${id} are not exist`
-            })
+            return next(new AppError(`Not found!, id with ${id} are not exist`, 404))
         }
         const product = await Product.destroy({
             where: { id: req.params.id }
