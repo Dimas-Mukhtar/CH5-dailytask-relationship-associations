@@ -1,44 +1,60 @@
 const imagekit = require("../lib/imageKit")
 const { Product } = require("../models")
 const AppError = require("../utils/apiError")
+const getTokenFromHeaders = require("../middlewares/getTokenFromHeaders")
+const decodedVerifyToken = require("../middlewares/decodedVerifyToken")
 
 const createProduct = async (req, res, next) => {
   const { name, price, stock } = req.body
-  const file = req.file
-  let img
-  try {
-    if (file) {
-      // dapatkan extension filenya
-      const split = file.originalname.split(".")
-      const extension = split(split.length - 1)
+  // const file = req.file
+  // let img
 
-      // upload file ke image kit
-      const img = await imagekit.upload({
-        file: file.buffer,
-        fileName: `IMG-${Date.now()}.${extension}`
-      })
-      img = img.url
+  try {
+    // if (file) {
+    //   // dapatkan extension file nya
+    //   const split = file.originalname.split(".")
+    //   const extension = split[split.length - 1]
+
+    //   // upload file ke imagekit
+    //   const uploadedImage = await imagekit.upload({
+    //     file: file.buffer,
+    //     fileName: `IMG-${Date.now()}.${extension}`
+    //   })
+    //   img = uploadedImage.url
+    // }
+    const token = getTokenFromHeaders(req)
+    const decodedUser = decodedVerifyToken(token)
+    const userId = decodedUser.id
+    const shopId = decodedUser.shopId
+    if (userId === null) {
+      return next(new AppError("Invalid token", 404))
     }
-    const product = await Product.create({
+    if (shopId === null) {
+      return next(new AppError("You dont have relation to any shop", 400))
+    }
+
+    const newProduct = await Product.create({
       name,
       price,
       stock,
-      ImageUrl: img
+      shopId: shopId
     })
+
     res.status(200).json({
       status: "Success, product created",
       data: {
-        product
+        newProduct
       }
     })
   } catch (error) {
-    next(new AppError(error.message, 400))
+    console.error(error)
+    next(new AppError(error.message, 500))
   }
 }
 
 const getProducts = async (req, res, next) => {
   try {
-    const product = await Product.findAll()
+    const product = await Product.findAll({ include: ["Shop"] })
     res.status(200).json({
       status: "Success, product fetched",
       data: {
@@ -46,14 +62,14 @@ const getProducts = async (req, res, next) => {
       }
     })
   } catch (error) {
-    next(new AppError(error.message, 400))
+    next(new AppError(error.message, 500))
   }
 }
 
 const getProduct = async (req, res, next) => {
   const id = req.params.id
   try {
-    const product = await Product.findOne({ where: { id } })
+    const product = await Product.findOne({ where: { id }, include: ["Shop"] })
     if (!product) {
       return next(new AppError(`Not found!, id with ${id} are not exist`, 404))
     }
@@ -64,7 +80,7 @@ const getProduct = async (req, res, next) => {
       }
     })
   } catch (error) {
-    next(new AppError(error.message, 400))
+    next(new AppError(error.message, 500))
   }
 }
 
@@ -82,7 +98,7 @@ const updateProduct = async (req, res, next) => {
         price: price,
         stock: stock
       },
-      { where: { id } }
+      { where: { id }, returning: true }
     )
     res.status(200).json({
       status: `Success, product updated where id ${id}`,
@@ -91,7 +107,7 @@ const updateProduct = async (req, res, next) => {
       }
     })
   } catch (error) {
-    next(new AppError(error.message, 400))
+    next(new AppError(error.message, 500))
   }
 }
 
@@ -112,7 +128,7 @@ const deleteProduct = async (req, res, next) => {
       }
     })
   } catch (error) {
-    next(new AppError(error.message, 400))
+    next(new AppError(error.message, 500))
   }
 }
 

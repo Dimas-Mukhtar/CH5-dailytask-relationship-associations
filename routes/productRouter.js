@@ -8,13 +8,18 @@ const {
 } = require("../controllers/productController")
 
 const uploader = require("../middlewares/uploader")
-const authenticate = require("../middlewares/authentication")
-const checkRole = require("../middlewares/checkRole")
+const checkTokenFromHeaders = require("../middlewares/checkTokenFromHeaders")
+const checkOwnerShip = require("../middlewares/checkOwnership")
+const isTokenNull = require("../middlewares/isTokenNull")
 
 router
   .route("/")
-  .post(uploader.single("image"), createProduct)
-  .get(authenticate, checkRole("Owner"), getProducts)
-router.route("/:id").get(getProduct).put(updateProduct).delete(deleteProduct)
+  .post(checkTokenFromHeaders, isTokenNull, uploader.single("image"), createProduct)
+  .get(getProducts)
+router
+  .route("/:id")
+  .get(getProduct)
+  .put(checkTokenFromHeaders, checkOwnerShip, updateProduct)
+  .delete(checkTokenFromHeaders, checkOwnerShip, deleteProduct)
 
 module.exports = router

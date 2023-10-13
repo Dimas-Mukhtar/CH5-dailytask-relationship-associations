@@ -1,15 +1,18 @@
 const bcrypt = require("bcryptjs")
 const jwt = require("jsonwebtoken")
-const { Auth, User } = require("../models")
+const { Auth, User, Shop } = require("../models")
 const ApiError = require("../utils/apiError")
+const getTokenFromHeaders = require("../middlewares/getTokenFromHeaders")
+const decodedVerifyToken = require("../middlewares/decodedVerifyToken")
 
 const register = async (req, res, next) => {
-  const { email, password, confirmPassword, name, age, address } = req.body
+  const { email, password, confirmPassword, name, age, address, role, shopId } = req.body
   try {
-    // validasi untuk check apakah emailnya udah ada atau belum
+    if (!email || !password)
+      return res.status(400).json({ status: "Bad request, email and password are required" })
     const user = await Auth.findOne({ where: { email } })
     if (user) {
-      next(new ApiError("User email already taken", 400))
+      return next(new ApiError("User email already taken", 400))
     }
 
     const salt = await bcrypt.genSalt(10)
@@ -19,17 +22,21 @@ const register = async (req, res, next) => {
     // minimum password length
     const passwordLength = password <= 8
     if (passwordLength) {
-      next(new ApiError("Minimum password must be 8 character", 400))
+      return next(new ApiError("Minimum password must be 8 character", 400))
     }
 
     if (password !== confirmPassword) {
-      next(new ApiError("Minimum confirm password does not same", 400))
+      return next(new ApiError("Password and confirmPassword must be the same", 400))
     }
+
+    const addShop = await Shop.findOne({ where: { id: shopId } })
 
     const newUser = await User.create({
       name,
       address,
-      age
+      age,
+      role,
+      shopId: addShop.id
     })
     await Auth.create({
       email,
@@ -39,7 +46,7 @@ const register = async (req, res, next) => {
     })
 
     res.status(201).json({
-      status: "Success",
+      status: "Success register",
       data: {
         ...newUser,
         email,
@@ -48,7 +55,7 @@ const register = async (req, res, next) => {
       }
     })
   } catch (error) {
-    next(new ApiError(error.message, 400))
+    next(new ApiError(error.message, 500))
   }
 }
 
@@ -67,7 +74,8 @@ const login = async (req, res, next) => {
           id: user.userId,
           username: user.User.name,
           role: user.User.role,
-          email: user.email
+          email: user.email,
+          shopId: user.User.shopId
         },
         process.env.JWT_SECRET
       )
@@ -87,7 +95,27 @@ const login = async (req, res, next) => {
   }
 }
 
+const checkToken = async (req, res, next) => {
+  try {
+    const token = getTokenFromHeaders(req)
+    const decodedUser = decodedVerifyToken(token)
+    const userId = decodedUser.id
+    const user = await User.findOne({
+      where: { id: userId }
+    })
+    res.status(200).json({
+      status: "Success",
+      data: {
+        user
+      }
+    })
+  } catch (error) {
+    next(new ApiError(error.message, 500))
+  }
+}
+
 module.exports = {
   register,
-  login
+  login,
+  checkToken
 }

@@ -23,9 +23,8 @@ module.exports = {
         defaultValue:
           "https://tse2.mm.bing.net/th?id=OIP.U2iQ7wNK6ZzTW_traW_-PQHaHa&pid=Api&P=0&h=180"
       },
-      userId: {
-        type: Sequelize.INTEGER,
-        allowNull: false
+      shopId: {
+        type: Sequelize.INTEGER
       },
       createdAt: {
         allowNull: false,

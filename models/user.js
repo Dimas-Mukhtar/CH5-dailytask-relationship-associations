@@ -11,8 +11,13 @@ module.exports = (sequelize, DataTypes) => {
       // define association here
       User.hasOne(models.Auth, {
         foreignKey: {
-          name: "userId",
-          allowNull: false
+          name: "userId"
+        }
+      })
+
+      User.belongsTo(models.Shop, {
+        foreignKey: {
+          name: "shopId"
         }
       })
     }
@@ -25,7 +30,8 @@ module.exports = (sequelize, DataTypes) => {
       role: {
         type: DataTypes.ENUM(["Owner", "Staff"]),
         defaultValue: "Staff"
-      }
+      },
+      shopId: DataTypes.INTEGER
     },
     {
       sequelize,

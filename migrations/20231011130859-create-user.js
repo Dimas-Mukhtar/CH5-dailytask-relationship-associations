@@ -22,6 +22,9 @@ module.exports = {
         type: Sequelize.ENUM(["Owner", "Staff"]),
         defaultValue: "Staff"
       },
+      shopId: {
+        type: Sequelize.INTEGER
+      },
       createdAt: {
         allowNull: false,
         type: Sequelize.DATE
