@@ -29,14 +29,17 @@ const register = async (req, res, next) => {
       return next(new ApiError("Password and confirmPassword must be the same", 400))
     }
 
-    const addShop = await Shop.findOne({ where: { id: shopId } })
+    let addShop
+    if (shopId) {
+      addShop = await Shop.findOne({ where: { id: shopId } })
+    }
 
     const newUser = await User.create({
       name,
       address,
       age,
       role,
-      shopId: addShop.id
+      shopId: addShop ? addShop.id : null
     })
     await Auth.create({
       email,
@@ -55,6 +58,7 @@ const register = async (req, res, next) => {
       }
     })
   } catch (error) {
+    console.error(error)
     next(new ApiError(error.message, 500))
   }
 }

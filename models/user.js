@@ -31,9 +31,20 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.ENUM(["Owner", "Staff"]),
         defaultValue: "Staff"
       },
-      shopId: DataTypes.INTEGER
+      shopId: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
+        defaultValue: null
+      }
     },
     {
+      // hooks: {
+      //   beforeCreate: async (user) => {
+      //     if (!user.shopId) {
+      //       user.shopId = null
+      //     }
+      //   }
+      // },
       sequelize,
       modelName: "User"
     }

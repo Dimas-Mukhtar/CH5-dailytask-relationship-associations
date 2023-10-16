@@ -19,7 +19,7 @@ router
 router
   .route("/:id")
   .get(getProduct)
-  .put(checkTokenFromHeaders, checkOwnerShip, updateProduct)
-  .delete(checkTokenFromHeaders, checkOwnerShip, deleteProduct)
+  .put(checkTokenFromHeaders, isTokenNull, checkOwnerShip, updateProduct)
+  .delete(checkTokenFromHeaders, isTokenNull, checkOwnerShip, deleteProduct)
 
 module.exports = router

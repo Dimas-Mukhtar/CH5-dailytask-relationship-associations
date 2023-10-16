@@ -2,16 +2,17 @@ const router = require("express").Router()
 const shopController = require("../controllers/shopController")
 const checkOwnerShip = require("../middlewares/checkOwnership")
 const checkTokenFromHeaders = require("../middlewares/checkTokenFromHeaders")
+const isTokenNull = require("../middlewares/isTokenNull")
 
 router
   .route("/")
-  .post(checkTokenFromHeaders, checkOwnerShip, shopController.createShop)
+  .post(checkTokenFromHeaders, isTokenNull, checkOwnerShip, shopController.createShop)
   .get(shopController.getShops)
 
 router
   .route("/:id")
-  .put(checkTokenFromHeaders, checkOwnerShip, shopController.updateShop)
+  .put(checkTokenFromHeaders, isTokenNull, checkOwnerShip, shopController.updateShop)
   .get(shopController.getShop)
-  .delete(checkTokenFromHeaders, checkOwnerShip, shopController.deleteShop)
+  .delete(checkTokenFromHeaders, isTokenNull, checkOwnerShip, shopController.deleteShop)
 
 module.exports = router

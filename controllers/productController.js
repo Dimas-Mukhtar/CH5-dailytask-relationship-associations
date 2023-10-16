@@ -24,11 +24,7 @@ const createProduct = async (req, res, next) => {
     // }
     const token = getTokenFromHeaders(req)
     const decodedUser = decodedVerifyToken(token)
-    const userId = decodedUser.id
     const shopId = decodedUser.shopId
-    if (userId === null) {
-      return next(new AppError("Invalid token", 404))
-    }
     if (shopId === null) {
       return next(new AppError("You dont have relation to any shop", 400))
     }
